@@ -258,21 +258,19 @@ Datum pgis_union_geometry_array(PG_FUNCTION_ARGS)
 	*/
 	ArrayType *array;
 
-	ArrayIterator iterator;
-	Datum value;
-	bool isnull;
-
-	int is3d = LW_FALSE, gotsrid = LW_FALSE;
-	int nelems = 0, geoms_size = 0, curgeom = 0, count = 0;
+	int is3d = LW_FALSE;
+	uint32_t nelems;
 
 	GSERIALIZED *gser_out = NULL;
 
 	GEOSGeometry *g = NULL;
 	GEOSGeometry *g_union = NULL;
 	GEOSGeometry **geoms = NULL;
+	LWGEOM** lwgeom_inputs = NULL;
 
 	int srid = SRID_UNKNOWN;
-
+	uint32_t i;
+	bool is_all_empty = true;
 	int empty_type = 0;
 
 	/* Null array, null geometry (should be empty?) */
@@ -280,120 +278,49 @@ Datum pgis_union_geometry_array(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	array = PG_GETARG_ARRAYTYPE_P(0);
-	nelems = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	
-	/* Empty array? Null return */
-	if ( nelems == 0 ) PG_RETURN_NULL();
+	nelems = array_nelems_not_null(array);
 
-	/* Quick scan for nulls */
-#if POSTGIS_PGSQL_VERSION >= 95	
-	iterator = array_create_iterator(array, 0, NULL);
-#else
-	iterator = array_create_iterator(array, 0);
-#endif
-	while( array_iterate(iterator, &value, &isnull) )
-	{
-		/* Skip null array items */
-		if ( isnull )
-			continue;
-		
-		count++;
-	}
-	array_free_iterator(iterator);
-	
-	
-	/* All-nulls? Return null */
-	if ( count == 0 )
+	/* Empty/All-Null array, null return */
+	if ( nelems == 0 )
 		PG_RETURN_NULL();
-	
+
 	/* One geom, good geom? Return it */
-	if ( count == 1 && nelems == 1 )
+	if ( nelems == 1 )
 		PG_RETURN_POINTER((GSERIALIZED *)(ARR_DATA_PTR(array)));
-	
+
 	/* Ok, we really need GEOS now ;) */
 	initGEOS(lwpgnotice, lwgeom_geos_error);
 
-	/*
-	** Collect the non-empty inputs and stuff them into a GEOS collection
-	*/
-	geoms_size = nelems;
-	geoms = palloc(sizeof(GEOSGeometry*) * geoms_size);
-
-	/*
-	** We need to convert the array of GSERIALIZED into a GEOS collection.
-	** First make an array of GEOS geometries.
-	*/
-#if POSTGIS_PGSQL_VERSION >= 95	
-	iterator = array_create_iterator(array, 0, NULL);
-#else
-	iterator = array_create_iterator(array, 0);
-#endif
-	while( array_iterate(iterator, &value, &isnull) )
+	/* Instead of converting directly to GEOS, find the maximum empty LWGEOM type */
+	lwgeom_inputs = ARRAY2LWGEOM(array, nelems, &is3d, &srid);
+	geoms = lwalloc(nelems * sizeof(GEOSGeometry*));
+	for (i = 0; i < nelems; i++)
 	{
-		GSERIALIZED *gser_in;
-
-		/* Skip null array items */
-		if ( isnull )
-			continue;
-		
-		gser_in = (GSERIALIZED *)DatumGetPointer(value);
-
-		/* Check for SRID mismatch in array elements */
-		if ( gotsrid ) 
+		if (lwgeom_is_empty(lwgeom_inputs[i]))
 		{
-			error_if_srid_mismatch(srid, gserialized_get_srid(gser_in));
+			int lwtype = lwgeom_get_type(lwgeom_inputs[i]);
+			empty_type = empty_type > lwtype ? empty_type : lwtype;
 		}
 		else
 		{
-			/* Initialize SRID/dimensions info */
-			srid = gserialized_get_srid(gser_in);
-			is3d = gserialized_has_z(gser_in);
-			gotsrid = 1;
+			is_all_empty = false;
 		}
-
-		/* Don't include empties in the union */
-		if ( gserialized_is_empty(gser_in) )
-		{
-			int gser_type = gserialized_get_type(gser_in);
-			if (gser_type > empty_type)
-			{
-				empty_type = gser_type;
-				POSTGIS_DEBUGF(4, "empty_type = %d  gser_type = %d", empty_type, gser_type);
-			}
-		}
-		else
-		{
-			g = (GEOSGeometry *)POSTGIS2GEOS(gser_in);
-
-			/* Uh oh! Exception thrown at construction... */
-			if ( ! g )  
-			{
-				HANDLE_GEOS_ERROR("One of the geometries in the set "
-				                  "could not be converted to GEOS");
-				PG_RETURN_NULL();
-			}
-
-			/* Ensure we have enough space in our storage array */
-			if ( curgeom == geoms_size )
-			{
-				geoms_size *= 2;
-				geoms = repalloc( geoms, sizeof(GEOSGeometry*) * geoms_size );
-			}
-
-			geoms[curgeom] = g;
-			curgeom++;
-		}
-
+		geoms[i] = LWGEOM2GEOS(lwgeom_inputs[i], 0);
+		lwgeom_free(lwgeom_inputs[i]);
 	}
-	array_free_iterator(iterator);
+	lwfree(lwgeom_inputs);
 
 	/*
 	** Take our GEOS geometries and turn them into a GEOS collection,
 	** then pass that into cascaded union.
 	*/
-	if (curgeom > 0)
+	if (is_all_empty)
 	{
-		g = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION, geoms, curgeom);
+		gser_out = geometry_serialize(lwgeom_construct_empty(empty_type, srid, is3d, 0));
+	}
+	else
+	{
+		g = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION, geoms, nelems);
 		if ( ! g )
 		{
 			HANDLE_GEOS_ERROR("Could not create GEOS COLLECTION from geometry array");
@@ -408,24 +335,11 @@ Datum pgis_union_geometry_array(PG_FUNCTION_ARGS)
 			PG_RETURN_NULL();
 		}
 
-		GEOSSetSRID(g_union, srid);
-		gser_out = GEOS2POSTGIS(g_union, is3d);
+        GEOSSetSRID(g_union, srid);
+        gser_out = GEOS2POSTGIS(g_union, is3d);
 		GEOSGeom_destroy(g_union);
 	}
-	/* No real geometries in our array, any empties? */
-	else
-	{
-		/* If it was only empties, we'll return the largest type number */
-		if ( empty_type > 0 )
-		{
-			PG_RETURN_POINTER(geometry_serialize(lwgeom_construct_empty(empty_type, srid, is3d, 0)));
-		}
-		/* Nothing but NULL, returns NULL */
-		else
-		{
-			PG_RETURN_NULL();
-		}
-	}
+
 
 	if ( ! gser_out )
 	{
