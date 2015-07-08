@@ -137,7 +137,9 @@ WITH inp AS (SELECT
 WITH inp AS (SELECT
  'LINESTRING EMPTY'::geometry as empty
  ) SELECT 'ST_Length(empty) == 0', ST_Length(empty) FROM inp;
-
+WITH inp AS (SELECT
+    unnest(ARRAY['LINESTRING EMPTY', 'POLYGON EMPTY', 'MULTIPOINT EMPTY'])::geometry AS empty
+) SELECT 'ST_Union(multiple empties)) == highest-type empty', ST_AsText(ST_Union(empty)) FROM inp;
 
 -- Operators
 
