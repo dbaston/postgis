@@ -2720,28 +2720,14 @@ Datum geos_intersects(PG_FUNCTION_ARGS)
 
 	if ( prep_cache && prep_cache->prepared_geom )
 	{
-		if ( prep_cache->argnum == 1 )
-		{
-			GEOSGeometry *g = (GEOSGeometry *)POSTGIS2GEOS(geom2);
-			if ( 0 == g )   /* exception thrown at construction */
-			{
-				HANDLE_GEOS_ERROR("Geometry could not be converted to GEOS");
-				PG_RETURN_NULL();
-			}
-			result = GEOSPreparedIntersects( prep_cache->prepared_geom, g);
-			GEOSGeom_destroy(g);
-		}
-		else
-		{
-			GEOSGeometry *g = (GEOSGeometry *)POSTGIS2GEOS(geom1);
-			if ( 0 == g )   /* exception thrown at construction */
-			{
-				HANDLE_GEOS_ERROR("Geometry could not be converted to GEOS");
-				PG_RETURN_NULL();
-			}
-			result = GEOSPreparedIntersects( prep_cache->prepared_geom, g);
-			GEOSGeom_destroy(g);
-		}
+		GEOSGeometry* g = prep_cache->argnum == 1 ? POSTGIS2GEOS(geom2) : POSTGIS2GEOS(geom1);
+        if ( 0 == g )   /* exception thrown at construction */
+        {
+            HANDLE_GEOS_ERROR("Geometry could not be converted to GEOS");
+            PG_RETURN_NULL();
+        }
+        result = GEOSPreparedIntersects( prep_cache->prepared_geom, g);
+        GEOSGeom_destroy(g);
 	}
 	else
 	{
