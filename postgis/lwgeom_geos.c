@@ -3416,15 +3416,14 @@ Datum GEOSnoop(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(polygonize_garray);
 Datum polygonize_garray(PG_FUNCTION_ARGS)
 {
-	Datum datum;
 	ArrayType *array;
 	int is3d = 0;
 	uint32 nelems, i;
 	GSERIALIZED *result;
 	GEOSGeometry *geos_result;
-	const GEOSGeometry **vgeoms;
+	GEOSGeometry **geos_inputs;
 	int srid=SRID_UNKNOWN;
-	size_t offset;
+
 #if POSTGIS_DEBUG_LEVEL >= 3
 	static int call=1;
 #endif
@@ -3433,60 +3432,35 @@ Datum polygonize_garray(PG_FUNCTION_ARGS)
 	call++;
 #endif
 
-	datum = PG_GETARG_DATUM(0);
-
 	/* Null array, null geometry (should be empty?) */
-	if ( (Pointer *)datum == NULL ) PG_RETURN_NULL();
+	if (PG_ARGISNULL(0))
+		PG_RETURN_NULL();
 
-	array = DatumGetArrayTypeP(datum);
+	array = PG_GETARG_ARRAYTYPE_P(0);
+	nelems = array_nelems_not_null(array);
 
-	nelems = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-
-	POSTGIS_DEBUGF(3, "polygonize_garray: number of elements: %d", nelems);
+	POSTGIS_DEBUGF(3, "polygonize_garray: number of non-null elements: %d", nelems);
 
 	if ( nelems == 0 ) PG_RETURN_NULL();
 
 	/* Ok, we really need geos now ;) */
 	initGEOS(lwpgnotice, lwgeom_geos_error);
 
-	vgeoms = palloc(sizeof(GEOSGeometry *)*nelems);
-	offset = 0;
-	for (i=0; i<nelems; i++)
-	{
-		GEOSGeometry* g;
-		GSERIALIZED *geom = (GSERIALIZED *)(ARR_DATA_PTR(array)+offset);
-		offset += INTALIGN(VARSIZE(geom));
-		if ( ! is3d ) is3d = gserialized_has_z(geom);
-
-		g = (GEOSGeometry *)POSTGIS2GEOS(geom);
-		if ( 0 == g )   /* exception thrown at construction */
-		{
-			HANDLE_GEOS_ERROR("Geometry could not be converted to GEOS");
-			PG_RETURN_NULL();
-		}
-		vgeoms[i] = g;
-		if ( ! i )
-		{
-			srid = gserialized_get_srid(geom);
-		}
-		else
-		{
-			if ( srid != gserialized_get_srid(geom) )
-			{
-				elog(ERROR, "polygonize: operation on mixed SRID geometries");
-				PG_RETURN_NULL();
-			}
-		}
-	}
+	geos_inputs = ARRAY2GEOS(array, nelems, &is3d, &srid);
+	if(!geos_inputs)
+		PG_RETURN_NULL();
 
 	POSTGIS_DEBUG(3, "polygonize_garray: invoking GEOSpolygonize");
 
-	geos_result = GEOSPolygonize(vgeoms, nelems);
+	geos_result = GEOSPolygonize((const GEOSGeometry**) geos_inputs, nelems);
 
 	POSTGIS_DEBUG(3, "polygonize_garray: GEOSpolygonize returned");
 
-	for (i=0; i<nelems; ++i) GEOSGeom_destroy((GEOSGeometry *)vgeoms[i]);
-	pfree(vgeoms);
+	for (i=0; i<nelems; i++)
+	{
+		GEOSGeom_destroy(geos_inputs[i]);
+	}
+	pfree(geos_inputs);
 
 	if ( ! geos_result ) PG_RETURN_NULL();
 
@@ -3502,7 +3476,6 @@ Datum polygonize_garray(PG_FUNCTION_ARGS)
 	/*compressType(result); */
 
 	PG_RETURN_POINTER(result);
-
 }
 
 
