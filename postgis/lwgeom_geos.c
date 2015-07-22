@@ -89,7 +89,6 @@ Datum ST_UnaryUnion(PG_FUNCTION_ARGS);
 Datum ST_Equals(PG_FUNCTION_ARGS);
 Datum ST_BuildArea(PG_FUNCTION_ARGS);
 Datum ST_DelaunayTriangles(PG_FUNCTION_ARGS);
-
 Datum pgis_union_geometry_array(PG_FUNCTION_ARGS);
 
 /*
@@ -108,7 +107,7 @@ Datum postgis_geos_version(PG_FUNCTION_ARGS)
 
 /**
  *  @brief Compute the Hausdorff distance thanks to the corresponding GEOS function
- *  @example hausdorffdistance {@link #hausdorffdistance} - SELECT st_hausdorffdistance(
+ *  @example hausdorffdistance {@link #hausdorffdistance} - SELECT ST_HausdorffDistance(
  *      'POLYGON((0 0, 0 2, 1 2, 2 2, 2 0, 0 0))'::geometry,
  *      'POLYGON((0.5 0.5, 0.5 2.5, 1.5 2.5, 2.5 2.5, 2.5 0.5, 0.5 0.5))'::geometry);
  */
@@ -166,7 +165,7 @@ Datum hausdorffdistance(PG_FUNCTION_ARGS)
 
 /**
  *  @brief Compute the Hausdorff distance with densification thanks to the corresponding GEOS function
- *  @example hausdorffdistancedensify {@link #hausdorffdistancedensify} - SELECT st_hausdorffdistancedensify(
+ *  @example hausdorffdistancedensify {@link #hausdorffdistancedensify} - SELECT ST_HausdorffDistance(
  *      'POLYGON((0 0, 0 2, 1 2, 2 2, 2 0, 0 0))'::geometry,
  *      'POLYGON((0.5 0.5, 0.5 2.5, 1.5 2.5, 2.5 2.5, 2.5 0.5, 0.5 0.5))'::geometry, 0.5);
  */
@@ -406,7 +405,7 @@ Datum ST_UnaryUnion(PG_FUNCTION_ARGS)
 
 
 /**
- * @example geomunion {@link #geomunion} SELECT geomunion(
+ * @example geomunion {@link #geomunion} SELECT ST_Union(
  *      'POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))',
  *      'POLYGON((5 5, 15 5, 15 7, 5 7, 5 5))'
  * );
@@ -441,7 +440,7 @@ Datum geos_geomunion(PG_FUNCTION_ARGS)
 
 
 /**
- *  @example symdifference {@link #symdifference} - SELECT symdifference(
+ *  @example symdifference {@link #symdifference} - SELECT ST_SymDifference(
  *      'POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))',
  *      'POLYGON((5 5, 15 5, 15 7, 5 7, 5 5))');
  */
@@ -1029,7 +1028,7 @@ Datum geos_intersection(PG_FUNCTION_ARGS)
 }
 
 /**
- * @example difference {@link #difference} - SELECT difference(
+ * @example difference {@link #difference} - SELECT ST_Difference(
  *      'POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))',
  *	'POLYGON((5 5, 15 5, 15 7, 5 7, 5 5))');
  */
@@ -1062,7 +1061,7 @@ Datum geos_difference(PG_FUNCTION_ARGS)
 
 
 /**
-	@example pointonsurface - {@link #pointonsurface} SELECT pointonsurface('POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))');
+	@example pointonsurface - {@link #pointonsurface} SELECT ST_PointOnSurface('POLYGON((0 0, 10 0, 10 10, 0 10, 0 0))');
 */
 PG_FUNCTION_INFO_V1(pointonsurface);
 Datum pointonsurface(PG_FUNCTION_ARGS)
