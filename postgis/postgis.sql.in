@@ -3244,21 +3244,20 @@ CREATE OR REPLACE FUNCTION ST_IsValid(geometry, int4)
 	LANGUAGE 'sql' IMMUTABLE STRICT
 	COST 100;
 
-
--- Requires GEOS >= 3.2.0
--- Availability: 1.5.0
-CREATE OR REPLACE FUNCTION ST_HausdorffDistance(geom1 geometry, geom2 geometry)
-	RETURNS FLOAT8
-	AS 'MODULE_PATHNAME', 'hausdorffdistance'
-	LANGUAGE 'c' IMMUTABLE STRICT
-	COST 100;
-
 -- Requires GEOS >= 3.2.0
 -- Availability: 1.5.0
 CREATE OR REPLACE FUNCTION ST_HausdorffDistance(geom1 geometry, geom2 geometry, float8)
 	RETURNS FLOAT8
 	AS 'MODULE_PATHNAME', 'hausdorffdistancedensify'
 	LANGUAGE 'c' IMMUTABLE STRICT
+	COST 100;
+
+-- Requires GEOS >= 3.2.0
+-- Availability: 1.5.0
+CREATE OR REPLACE FUNCTION ST_HausdorffDistance(geom1 geometry, geom2 geometry)
+	RETURNS FLOAT8
+	AS $$ SELECT ST_HausdorffDistance(geom1, geom2, 0.0::float8) $$
+	LANGUAGE 'sql' IMMUTABLE STRICT
 	COST 100;
 
 -- PostGIS equivalent function: difference(geom1 geometry, geom2 geometry)
