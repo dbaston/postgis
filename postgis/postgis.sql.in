@@ -2698,20 +2698,20 @@ CREATE OR REPLACE FUNCTION ST_Transform(geometry,integer)
 -- Availability: 2.3.0
 CREATE OR REPLACE FUNCTION ST_Transform(geom geometry, to_proj text)
   RETURNS geometry AS
-'SELECT ST_SetSRID(postgis_transform_geometry($1, proj4text, $2, 99), 0)
+'SELECT postgis_transform_geometry($1, proj4text, $2, 0)
 FROM spatial_ref_sys WHERE srid=ST_SRID($1);'
   LANGUAGE sql IMMUTABLE STRICT;
 
 -- Availability: 2.3.0
 CREATE OR REPLACE FUNCTION ST_Transform(geom geometry, from_proj text, to_proj text)
   RETURNS geometry AS
-'SELECT ST_SetSRID(postgis_transform_geometry(ST_SetSRID($1, 99), $2, $3, 99), 0)'
+'SELECT postgis_transform_geometry($1, $2, $3, 0)'
   LANGUAGE sql IMMUTABLE STRICT;
 
 -- Availability: 2.3.0
 CREATE OR REPLACE FUNCTION ST_Transform(geom geometry, from_proj text, to_srid integer)
   RETURNS geometry AS
-'SELECT postgis_transform_geometry(ST_SetSRID($1, 99), $2, proj4text, $3)
+'SELECT postgis_transform_geometry($1, $2, proj4text, $3)
 FROM spatial_ref_sys WHERE srid=$3;'
   LANGUAGE sql IMMUTABLE STRICT;
 

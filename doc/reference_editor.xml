@@ -1883,15 +1883,15 @@ LINESTRING(26 125,54 84,101 100)
 	  <refsection>
 		<title>Description</title>
 
-        <para>Returns a new geometry with its coordinates transformed to a different spatial
-            reference system referenced by the SRID integer parameter.  The destination spatial
- 			reference <varname>to_srid</varname> may be identified by a valid
- 			SRID integer parameter (i.e. it must exist in the
- 			<varname>spatial_ref_sys</varname> table).
- 			Alternatively, a spatial reference defined as a PROJ.4 string
- 			can be used for <varname>to_proj</varname> and/or
- 			<varname>from_proj</varname>, however these methods are not
- 			optimized. With the exception of functions with
+        <para>Returns a new geometry with its coordinates transformed to 
+            a different spatial reference system. The destination spatial
+			reference <varname>to_srid</varname> may be identified by a valid
+			SRID integer parameter (i.e. it must exist in the
+			<varname>spatial_ref_sys</varname> table).
+			Alternatively, a spatial reference defined as a PROJ.4 string
+			can be used for <varname>to_proj</varname> and/or
+			<varname>from_proj</varname>, however these methods are not
+			optimized. With the exception of functions with
             <varname>from_proj</varname>, geometries must have a valid SRID set.
         </para>
            
