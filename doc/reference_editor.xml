@@ -1891,13 +1891,15 @@ LINESTRING(26 125,54 84,101 100)
 			Alternatively, a spatial reference defined as a PROJ.4 string
 			can be used for <varname>to_proj</varname> and/or
 			<varname>from_proj</varname>, however these methods are not
-			optimized. With the exception of functions with
-            <varname>from_proj</varname>, geometries must have a valid SRID set.
-        </para>
+			optimized. If the destination spatial reference system is 
+			expressed with a PROJ.4 string instead of an SRID, the SRID of the
+			output geometry will be set to zero. With the exception of functions with
+			<varname>from_proj</varname>, input geometries must have a defined SRID.
+		</para>
            
 		<para>ST_Transform is often confused with ST_SetSRID().  ST_Transform actually changes the coordinates
 		of a geometry from one spatial reference system to another, while ST_SetSRID() simply changes the SRID identifier of
-		the geometry</para>
+		the geometry.</para>
 
 		<note>
 		  <para>Requires PostGIS be compiled with Proj support.  Use <xref linkend="PostGIS_Full_Version" /> to confirm you have proj support compiled in.</para>
