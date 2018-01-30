@@ -24,7 +24,9 @@ usage()
 	printf(_( "USAGE: shp2pgsql [<options>] <shapefile> [[<schema>.]<table>]\n"
 	          "OPTIONS:\n" ));
 	printf(_( "  -s [<from>:]<srid> Set the SRID field. Defaults to %d.\n"
-	          "      Optionally reprojects from given SRID (cannot be used with -D).\n"),
+                  "      Specifies SRID of the created geometry column, optionally\n"
+	          "      reprojecting from another SRID (reprojection cannot be\n"
+		  "      used with -D).\n"),
 	          SRID_UNKNOWN);
 	printf(_( " (-d|a|c|p) These are mutually exclusive options:\n"
 	          "     -d  Drops the table, then recreates it and populates\n"
