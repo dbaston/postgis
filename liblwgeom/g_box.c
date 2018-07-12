@@ -25,6 +25,7 @@
 #include "liblwgeom_internal.h"
 #include "lwgeom_log.h"
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 /* Fall back to older finite() if necessary */
@@ -399,12 +400,13 @@ GBOX* gbox_from_string(const char *str)
 char* gbox_to_string(const GBOX *gbox)
 {
 	static int sz = 138;
-	char *str = NULL;
+	char *str = (char*) lwalloc(sz);
 
 	if ( ! gbox )
-		return strdup("NULL POINTER");
-
-	str = (char*)lwalloc(sz);
+	{
+		strcpy(str, "NULL POINTER");
+		return str;
+	}
 
 	if ( FLAGS_GET_GEODETIC(gbox->flags) )
 	{
