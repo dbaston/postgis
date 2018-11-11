@@ -772,7 +772,7 @@ ptarray_contains_point_partial(const POINTARRAY *pa, const POINT2D *pt, int chec
 		* A point on the boundary of a ring is not contained.
 		* WAS: if (fabs(side) < 1e-12), see #852
 		*/
-		if ( (side == 0) && lw_pt_in_seg(pt, seg1, seg2) )
+		if ( (side == SIDE_CENTER) && lw_pt_in_seg(pt, seg1, seg2) )
 		{
 			return LW_BOUNDARY;
 		}
@@ -782,7 +782,7 @@ ptarray_contains_point_partial(const POINTARRAY *pa, const POINT2D *pt, int chec
 		* then the line is to the right of the point and
 		* circling counter-clockwise, so increment.
 		*/
-		if ( (side < 0) && (seg1->y <= pt->y) && (pt->y < seg2->y) )
+		if ( (side == SIDE_LEFT) && (seg1->y <= pt->y) && (pt->y < seg2->y) )
 		{
 			wn++;
 		}
@@ -792,7 +792,7 @@ ptarray_contains_point_partial(const POINTARRAY *pa, const POINT2D *pt, int chec
 		* then the line is to the right of the point and circling
 		* clockwise, so decrement.
 		*/
-		else if ( (side > 0) && (seg2->y <= pt->y) && (pt->y < seg1->y) )
+		else if ( (side == SIDE_RIGHT) && (seg2->y <= pt->y) && (pt->y < seg1->y) )
 		{
 			wn--;
 		}

@@ -259,7 +259,7 @@ lwarc_linearize(POINTARRAY *to,
 	LWDEBUGF(2, " p2 side is %d", p2_side);
 
 	/* Force counterclockwise scan if SYMMETRIC operation is requested */
-	if ( p2_side == -1 && flags & LW_LINEARIZE_FLAG_SYMMETRIC )
+	if ( p2_side == SIDE_LEFT && flags & LW_LINEARIZE_FLAG_SYMMETRIC )
 	{
 		/* swap p1-p3 */
 		t1 = (POINT2D*)p3;
@@ -283,7 +283,7 @@ lwarc_linearize(POINTARRAY *to,
 
 	/* The side of the p1/p3 line that p2 falls on dictates the sweep
 	   direction from p1 to p3. */
-	if ( p2_side == -1 )
+	if ( p2_side == SIDE_LEFT )
 		clockwise = LW_TRUE;
 	else
 		clockwise = LW_FALSE;

@@ -61,7 +61,7 @@ p2d_same(const POINT2D *p1, const POINT2D *p2)
 * Return  1  if point Q is right of segment P
 * Return  0  if point Q in on segment P
 */
-int lw_segment_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q)
+enum CG_SEGMENT_SIDE_TYPE lw_segment_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q)
 {
 	double side = ( (q->x - p1->x) * (p2->y - p1->y) - (p2->x - p1->x) * (q->y - p1->y) );
 	return SIGNUM(side);
@@ -222,7 +222,7 @@ int lw_arc_side(const POINT2D *A1, const POINT2D *A2, const POINT2D *A3, const P
 * by the first and second points is returned.  If the points are collinear,
 * as determined by equal slopes, then -1.0 is returned.  If the interior
 * point is coincident with either end point, they are taken as collinear.
-* For non-collinear cases, arc radious is returned.
+* For non-collinear cases, arc radius is returned.
 */
 double
 lw_arc_center(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3, POINT2D *result)
@@ -248,7 +248,7 @@ lw_arc_center(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3, POINT2D *
 		return cr;
 	}
 
-	/* Using cartesian eguations from page https://en.wikipedia.org/wiki/Circumscribed_circle */
+	/* Using cartesian equations from page https://en.wikipedia.org/wiki/Circumscribed_circle */
 	dx21 = p2->x - p1->x;
 	dy21 = p2->y - p1->y;
 	dx31 = p3->x - p1->x;
@@ -260,7 +260,7 @@ lw_arc_center(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3, POINT2D *
 	/* 2 * |Cross product|, d<0 means clockwise and d>0 counterclockwise sweeping angle */
 	d = 2 * (dx21 * dy31 - dx31 * dy21);
 
-	/* Check colinearity, |Cross product| = 0 */
+	/* Check collinearity, |Cross product| = 0 */
 	if (fabs(d) < EPSILON_SQLMM)
 		return -1.0;
 

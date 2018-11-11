@@ -217,6 +217,12 @@ enum CG_SEGMENT_INTERSECTION_TYPE {
     SEG_TOUCH_RIGHT = 5
 };
 
+enum CG_SEGMENT_SIDE_TYPE {
+    SIDE_LEFT = -1,
+    SIDE_CENTER = 0,
+    SIDE_RIGHT = 1
+};
+
 /*
 * Do the segments intersect? How?
 */

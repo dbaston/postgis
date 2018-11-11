@@ -210,20 +210,20 @@ rect_leaf_node_segment_side(RECT_NODE_LEAF *node, const POINT2D *q, int *on_boun
 			side = lw_segment_side(p1, p2, q);
 
 			/* Always note case where we're on boundary */
-			if (side == 0 && lw_pt_in_seg(q, p1, p2))
+			if (side == SIDE_CENTER && lw_pt_in_seg(q, p1, p2))
 			{
 				*on_boundary = LW_TRUE;
 				return 0;
 			}
 
 			/* Segment points up and point is on left */
-			if (p1->y < p2->y && side == -1 && q->y != p2->y)
+			if (p1->y < p2->y && side == SIDE_LEFT && q->y != p2->y)
 			{
 				return 1;
 			}
 
 			/* Segment points down and point is on right */
-			if (p1->y > p2->y && side == 1 && q->y != p2->y)
+			if (p1->y > p2->y && side == SIDE_RIGHT && q->y != p2->y)
 			{
 				return 1;
 			}
