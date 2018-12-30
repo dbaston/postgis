@@ -31,7 +31,7 @@ install:
 
 build_script:
   - ps: |
-        bash -lc "./autogen.sh && ./configure && make"
+        bash -lc "cd $env:APPVEYOR_BUILD_FOLDER; ./autogen.sh && ./configure && make"
 
 test_script:
   - set PGUSER=postgres
