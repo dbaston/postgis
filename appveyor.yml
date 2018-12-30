@@ -24,6 +24,7 @@ environment:
 
 build_script:
   - cd c:\build\postgis
+  - sh autogen.sh
   - configure
   - make
 
