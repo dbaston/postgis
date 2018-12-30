@@ -1,0 +1,43 @@
+# ------------------------------------------------------------------------------
+# appVeyor script
+# Copyright(c) pgRouting Contributors
+#
+# Main configuration
+# ------------------------------------------------------------------------------
+
+version: 3.0.{build}
+
+image: Visual Studio 2013
+configuration: Release
+platform: x64
+
+clone_depth: 1
+clone_folder: c:\build\postgis
+
+services:
+  - postgresql101
+
+environment:
+  CONFIGURATION: Release
+  BUILD_ROOT_DIR: c:\build
+  PG_VER: 10.1
+
+install:
+  # Install pgRouting prerequisites:
+  # cmake
+  # postGIS
+  # CGAL
+  - call ci\appveyor\install.bat
+
+
+build_script:
+  - cd c:\build\postgis
+  - configure
+  - make
+
+test_script:
+  - set PGUSER=postgres
+  - set PGPASSWORD=Password12!
+  - set PGHOME=C:\Progra~1\PostgreSQL\%PG_VER%
+  - set PGPORT=5432
+  - set PATH=%PATH%;%PGHOME%\bin
