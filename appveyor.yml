@@ -23,7 +23,7 @@ environment:
   PG_VER: 10.1
 
 install:
-  - mingw-get install autotools autoconf automake
+  - c:\MinGW\bin\mingw-get install autotools autoconf automake
 
 build_script:
   - cd c:\build\postgis
