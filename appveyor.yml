@@ -22,14 +22,6 @@ environment:
   BUILD_ROOT_DIR: c:\build
   PG_VER: 10.1
 
-install:
-  # Install pgRouting prerequisites:
-  # cmake
-  # postGIS
-  # CGAL
-  - call ci\appveyor\install.bat
-
-
 build_script:
   - cd c:\build\postgis
   - configure
