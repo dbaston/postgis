@@ -23,8 +23,9 @@ environment:
   PG_VER: 10.1
 
 install:
-  - set PATH=%PATH%;C:\MinGW\bin\
-  - mingw-get install autotools autoconf automake
+  - set PATH=%PATH%;C:\MinGW\msys\1.0\bin;C:\MinGW\bin\
+  - echo "C:\MinGW   /mingw" >%CYG_ROOT%/etc/fstab
+    # - mingw-get install autotools autoconf automake
 
 build_script:
   - cd c:\build\postgis
