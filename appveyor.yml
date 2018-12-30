@@ -20,6 +20,7 @@ services:
 environment:
   CONFIGURATION: Release
   BUILD_ROOT_DIR: c:\build
+  CYG_ROOT: C:/MinGW/msys/1.0
   PG_VER: 10.1
 
 install:
