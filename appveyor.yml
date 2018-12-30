@@ -24,15 +24,14 @@ environment:
   PG_VER: 10.1
 
 install:
-  - set PATH=%PATH%;C:\MinGW\msys\1.0\bin;C:\MinGW\bin\
-  - echo "C:\MinGW   /mingw" >%CYG_ROOT%/etc/fstab
-    # - mingw-get install autotools autoconf automake
+  - ps: |
+        $env:PATH="$env:CYG_ROOT\bin;C:\MinGW\bin;$($env:PATH)"
+        mingw-get install autotools autoconf automake
+        bash -lc "echo 'C:\MinGW   /mingw' > /etc/fstab"
 
 build_script:
-  - cd c:\build\postgis
-  - sh autogen.sh
-  - configure
-  - make
+  - ps: |
+        bash -x ./autogen.sh && ./configure && make
 
 test_script:
   - set PGUSER=postgres
