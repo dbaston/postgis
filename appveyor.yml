@@ -22,6 +22,9 @@ environment:
   BUILD_ROOT_DIR: c:\build
   PG_VER: 10.1
 
+install:
+  - mingw-get install autotools autoconf automake
+
 build_script:
   - cd c:\build\postgis
   - sh autogen.sh
